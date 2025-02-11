@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Travel Summary</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 p-6">
+    <div class="max-w-4xl mx-auto">
+        <h1 class="text-2xl font-bold mb-6 text-gray-800">Travel Booking Summary</h1>
+        
+        <!-- Quick Stats -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+            <div class="bg-blue-50 p-4 rounded-lg">
+                <h3 class="text-sm font-medium text-blue-900">Total Nights</h3>
+                <p class="text-2xl font-bold text-blue-700" id="totalNights">
+                    {{ ((solution.inward_transport_selection.dep - solution.outward_transport_selection.arr).days) }}
+                </p>
+            </div>
+            <div class="bg-green-50 p-4 rounded-lg">
+                <h3 class="text-sm font-medium text-green-900">Total Travel Time</h3>
+                <p class="text-2xl font-bold text-green-700" id="totalTravelHours">
+                    {% set outward_duration = (solution.outward_transport_selection.arr - solution.outward_transport_selection.dep).total_seconds() / 3600 %}
+                    {% set inward_duration = (solution.inward_transport_selection.arr - solution.inward_transport_selection.dep).total_seconds() / 3600 %}
+                    {{ "%.1f"|format(outward_duration + inward_duration) }}h
+                </p>
+            </div>
+            <div class="bg-purple-50 p-4 rounded-lg">
+                <h3 class="text-sm font-medium text-purple-900">Time at Destination</h3>
+                <p class="text-2xl font-bold text-purple-700" id="destinationTime">
+                    {% set destination_hours = (solution.inward_transport_selection.dep - solution.outward_transport_selection.arr).total_seconds() / 3600 %}
+                    {{ "%.1f"|format(destination_hours) }}h
+                </p>
+            </div>
+            <div class="bg-orange-50 p-4 rounded-lg">
+                <h3 class="text-sm font-medium text-orange-900">Transport Cost %</h3>
+                <p class="text-2xl font-bold text-orange-700" id="transportPercent">
+                    {% set transport_cost = solution.outward_transport_selection.cost + solution.inward_transport_selection.cost %}
+                    {{ "%.1f"|format(transport_cost / solution.cost * 100) }}%
+                </p>
+            </div>
+        </div>
+
+        <div class="grid gap-6 md:grid-cols-2 mb-8">
+            <!-- Outward Transport Card -->
+            <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                <h2 class="text-lg font-semibold mb-4 text-gray-800">Outward Journey</h2>
+                <div class="space-y-2">
+                    <p class="text-gray-600">ID: <span class="capitalize">{{ solution.outward_transport_selection.id }}</span></p>
+                    <p class="text-gray-600">Type: <span class="capitalize">{{ solution.outward_transport_selection.type }}</span></p>
+                    <p class="text-gray-600">Departure: {{ solution.outward_transport_selection.dep }}</p>
+                    <p class="text-gray-600">Arrival: {{ solution.outward_transport_selection.arr }}</p>
+                    <p class="text-gray-600">Duration: 
+                        {% set duration = (solution.outward_transport_selection.arr - solution.outward_transport_selection.dep).total_seconds() / 3600 %}
+                        {{ "%.1f"|format(duration) }} hours
+                    </p>
+                    <p class="text-gray-600">Overnight Journey: 
+                        <span class="{% if solution.outward_transport_selection.dep.date() != solution.outward_transport_selection.arr.date() %}text-yellow-600{% else %}text-gray-600{% endif %}">
+                            {{ "Yes" if solution.outward_transport_selection.dep.date() != solution.outward_transport_selection.arr.date() else "No" }}
+                        </span>
+                    </p>
+                    <p class="text-gray-600">Cost: <span class="transport-cost">{{ solution.outward_transport_selection.cost }}</span></p>
+                </div>
+            </div>
+
+            <!-- Inward Transport Card -->
+            <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                <h2 class="text-lg font-semibold mb-4 text-gray-800">Return Journey</h2>
+                <div class="space-y-2">
+                    <p class="text-gray-600">ID: <span class="capitalize">{{ solution.inward_transport_selection.id }}</span></p>
+                    <p class="text-gray-600">Type: <span class="capitalize">{{ solution.inward_transport_selection.type }}</span></p>
+                    <p class="text-gray-600">Departure: {{ solution.inward_transport_selection.dep }}</p>
+                    <p class="text-gray-600">Arrival: {{ solution.inward_transport_selection.arr }}</p>
+                    <p class="text-gray-600">Duration: 
+                        {% set duration = (solution.inward_transport_selection.arr - solution.inward_transport_selection.dep).total_seconds() / 3600 %}
+                        {{ "%.1f"|format(duration) }} hours
+                    </p>
+                    <p class="text-gray-600">Overnight Journey: 
+                        <span class="{% if solution.inward_transport_selection.dep.date() != solution.inward_transport_selection.arr.date() %}text-yellow-600{% else %}text-gray-600{% endif %}">
+                            {{ "Yes" if solution.inward_transport_selection.dep.date() != solution.inward_transport_selection.arr.date() else "No" }}
+                        </span>
+                    </p>
+                    <p class="text-gray-600">Cost: <span class="transport-cost">{{ solution.inward_transport_selection.cost }}</span></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Accommodation Card -->
+        <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200 mb-8">
+            <h2 class="text-lg font-semibold mb-4 text-gray-800">Accommodation</h2>
+            <div class="grid md:grid-cols-2 gap-4">
+                <div class="space-y-2">
+                    <p class="text-gray-600">Check-in time: {{ solution.accommodation_selection.id }}</p>
+                    <p class="text-gray-600">Check-in time: {{ solution.accommodation_selection.checkin }}</p>
+                    <p class="text-gray-600">Check-out time: {{ solution.accommodation_selection.checkout }}</p>
+                    <p class="text-gray-600">Early check-in needed: 
+                        <span class="{% if solution.outward_transport_selection.arr.time() < solution.accommodation_selection.checkin %}text-yellow-600{% else %}text-gray-600{% endif %}">
+                            {{ "Yes" if solution.outward_transport_selection.arr.time() < solution.accommodation_selection.checkin else "No" }}
+                        </span>
+                    </p>
+                    <p class="text-gray-600">Late check-out needed: 
+                        <span class="{% if solution.inward_transport_selection.dep.time() > solution.accommodation_selection.checkout %}text-yellow-600{% else %}text-gray-600{% endif %}">
+                            {{ "Yes" if solution.inward_transport_selection.dep.time() > solution.accommodation_selection.checkout else "No" }}
+                        </span>
+                    </p>
+                    <p class="text-gray-600">Breakfast included: 
+                        <span class="{% if solution.accommodation_selection.breakfast_included %}text-green-600{% else %}text-red-600{% endif %}">
+                            {{ "Yes" if solution.accommodation_selection.breakfast_included else "No" }}
+                        </span>
+                    </p>
+                </div>
+                <div class="space-y-2">
+                    <p class="text-gray-600">Cost per night: <span class="accommodation-cost">{{ solution.accommodation_selection.cost_per_night }}</span></p>
+                    <p class="text-gray-600">Internal cost: <span class="accommodation-cost">{{ solution.accommodation_selection.internal_cost }}</span></p>
+                    <p class="text-gray-600">Total nights: {{ ((solution.inward_transport_selection.dep - solution.outward_transport_selection.arr).days) }}</p>
+                    <p class="text-gray-600">Room total: <span class="accommodation-cost">
+                        {{ solution.accommodation_selection.cost_per_night * ((solution.inward_transport_selection.dep - solution.outward_transport_selection.arr).days) + solution.accommodation_selection.internal_cost }}
+                    </span></p>
+                    <p class="text-gray-600">Percentage of total: 
+                        {% set acc_total = solution.accommodation_selection.cost_per_night * ((solution.inward_transport_selection.dep - solution.outward_transport_selection.arr).days) + solution.accommodation_selection.internal_cost %}
+                        {{ "%.1f"|format(acc_total / solution.cost * 100) }}%
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Total Cost Card -->
+        <div class="bg-green-50 p-6 rounded-lg shadow-sm border border-green-200">
+            <h2 class="text-lg font-semibold mb-2 text-gray-800">Total Cost</h2>
+            <p class="text-2xl font-bold text-green-700" id="totalCost">{{ solution.cost }}</p>
+        </div>
+    </div>
+
+    <script>
+        // Format all costs in PKR
+        const formatter = new Intl.NumberFormat('en-PK', {
+            style: 'currency',
+            currency: 'PKR',
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 0
+        });
+
+        // Format transport costs
+        document.querySelectorAll('.transport-cost').forEach(element => {
+            element.textContent = formatter.format(element.textContent);
+        });
+
+        // Format accommodation costs
+        document.querySelectorAll('.accommodation-cost').forEach(element => {
+            element.textContent = formatter.format(element.textContent);
+        });
+
+        // Format total cost
+        const totalCostElement = document.getElementById('totalCost');
+        totalCostElement.textContent = formatter.format(totalCostElement.textContent);
+    </script>
+</body>
+</html>

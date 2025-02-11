@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Travel Options</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 p-6">
+    <div class="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-lg">
+        <h1 class="text-2xl font-bold mb-4">Travel Options</h1>
+        
+        <!-- Outward Transport Options -->
+        <h2 class="text-xl font-semibold mb-2">Outward Transport Options</h2>
+        <table class="w-full border-collapse border border-gray-300 mb-4">
+            <thead>
+                <tr class="bg-gray-200">
+                    <th class="border px-4 py-2">ID</th>
+                    <th class="border px-4 py-2">Departure Time</th>
+                    <th class="border px-4 py-2">Arrival Time</th>
+                    <th class="border px-4 py-2">Cost</th>
+                    <th class="border px-4 py-2">Transport Type</th>
+                </tr>
+            </thead>
+            <tbody>
+				{% for transport in outward_transport_options %}
+                <tr>
+					<td class="border px-4 py-2">{{ transport.id }}</td>
+					<td class="border px-4 py-2">{{ transport.dep }}</td>
+					<td class="border px-4 py-2">{{ transport.arr}}</td>
+					<td class="border px-4 py-2">{{ transport.cost }}</td>
+					<td class="border px-4 py-2">{{ transport.type }}</td>
+                </tr>
+				{% endfor %}
+            </tbody>
+        </table>
+        
+        <!-- Inward Transport Options -->
+        <h2 class="text-xl font-semibold mb-2">Inward Transport Options</h2>
+        <table class="w-full border-collapse border border-gray-300 mb-4">
+            <thead>
+                <tr class="bg-gray-200">
+                    <th class="border px-4 py-2">ID</th>
+                    <th class="border px-4 py-2">Departure Time</th>
+                    <th class="border px-4 py-2">Arrival Time</th>
+                    <th class="border px-4 py-2">Cost</th>
+                    <th class="border px-4 py-2">Transport Type</th>
+                </tr>
+            </thead>
+            <tbody>
+				{% for transport in inward_transport_options %}
+                <tr>
+					<td class="border px-4 py-2">{{ transport.id }}</td>
+					<td class="border px-4 py-2">{{ transport.dep }}</td>
+					<td class="border px-4 py-2">{{ transport.arr }}</td>
+					<td class="border px-4 py-2">{{ transport.cost }}</td>
+					<td class="border px-4 py-2">{{ transport.type }}</td>
+                </tr>
+				{% endfor %}
+            </tbody>
+        </table>
+
+        <!-- Accommodation Options -->
+        <h2 class="text-xl font-semibold mb-2">Accommodation Options</h2>
+        <table class="w-full border-collapse border border-gray-300 mb-4">
+            <thead>
+                <tr class="bg-gray-200">
+                    <th class="border px-4 py-2">ID</th>
+                    <th class="border px-4 py-2">Check-in Time</th>
+                    <th class="border px-4 py-2">Check-out Time</th>
+                    <th class="border px-4 py-2">Cost/Night</th>
+                    <th class="border px-4 py-2">Breakfast Included</th>
+                </tr>
+            </thead>
+            <tbody>
+				{% for accom in accommodation_options %}
+                <tr>
+					<td class="border px-4 py-2">{{ accom.id }}</td>
+					<td class="border px-4 py-2">{{ accom.checkin }}</td>
+					<td class="border px-4 py-2">{{ accom.checkout }}</td>
+					<td class="border px-4 py-2">{{ accom.cost_per_night }}</td>
+					<td class="border px-4 py-2">{{ accom.breakfast_included }}</td>
+                </tr>
+				{% endfor %}
+			</tbody>
+        </table>
+
+		<form action="/solve" method="post">
+			<button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-lg">Solve</button>
+		</form>
+
+        <div id="output" class="mt-4 p-4 bg-gray-200 rounded"></div>
+    </div>
+</body>
+</html>
