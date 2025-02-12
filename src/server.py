@@ -14,7 +14,7 @@ from data import (
     inward_transport_options,
     outward_transport_options,
 )
-from optimisation_model import model, print_solution_costs, w, w_keys
+from optimisation_model import model, print_solution_costs, get_solution
 
 
 class ModelSolution(BaseModel):
@@ -54,27 +54,7 @@ async def solve_model(request: Request):
 
     logging.info("Status:", pulp.LpStatus[model.status])
 
-    selection = [(i, j, k) for i, j, k in w_keys if w[(i, j, k)] == 1]
-
-    print(len(selection))
-    i,j,k = selection[-1]
-
-    outward_selection, inward_selection, accommodation_selection = None, None, None
-
-    for option in outward_transport_options:
-        if option.id == i:
-            outward_selection = option
-            break
-
-    for option in inward_transport_options:
-        if option.id == j:
-            inward_selection = option
-            break
-
-    for option in accommodation_options:
-        if option.id == k:
-            accommodation_selection = option
-            break
+    outward_selection, inward_selection, accommodation_selection = get_solution()
 
     return templates.TemplateResponse(
         request=request,

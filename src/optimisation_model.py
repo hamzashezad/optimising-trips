@@ -10,15 +10,13 @@ from data import (
     outward_transport_options,
 )
 
-# ----------------------------
-# 1. Define Sample Data
-# ----------------------------
 PKT = pytz.timezone("Asia/Karachi")
 
 # Date format and required time parameters
 min_out_dep = datetime.fromisoformat("2025-02-21T21:00:00+05:00")
 min_in_dep = datetime.fromisoformat("2025-02-23T23:00:00+05:00")
 
+# This can be defined as the event time
 required_start = datetime(2025, 2, 23, 12, 0, tzinfo=PKT)
 required_end = datetime(2025, 2, 23, 23, 0, tzinfo=PKT)
 
@@ -64,6 +62,7 @@ f_bf = 3000  # breakfast cost
 f_lunch = 3000  # lunch cost
 f_dinner = 4000  # dinner cost
 
+
 # ---------------------------------------------------
 # 2. Define Helper Functions
 # ---------------------------------------------------
@@ -102,7 +101,9 @@ for i in out_ids:
             ):
                 continue
 
-            delta_days = (in_dict[j].dep - out_dict[i].arr).total_seconds() / (3600 * 24)
+            delta_days = (in_dict[j].dep - out_dict[i].arr).total_seconds() / (
+                3600 * 24
+            )
             D_ij = math.ceil(delta_days)
             D[(i, j)] = D_ij
             for k in acc_ids:
@@ -186,58 +187,83 @@ model += (
     "TotalCost",
 )
 
+def get_solution() -> tuple[str, str, str]:
+    outward = None
+    for i in out_ids:
+        if x[i].value() == 1:
+            outward = out_dict[i]
+    inward = None
+    for j in in_ids:
+        if y[j].value() == 1:
+            inward = in_dict[j]
+    accom = None
+    for k in acc_ids:
+        if z[k].value() == 1:
+            accom = acc_dict[k]
+    return outward, inward, accom
+
+
 def print_solution_costs():
     if model.status != pulp.LpStatusOptimal:
         print(f"Model status: {model.status}")
         return
-        
+
     print("\n=== Selected Variables ===")
-    
+
     # Print selected outward flight
     print("\nSelected Outward Flight:")
     for i in out_ids:
-        if x[i].value() > 0.9:
+        if x[i].value() == 1:
             print(f"Flight {i}: {out_dict[i]}")
-            
+
     # Print selected inward flight
     print("\nSelected Inward Flight:")
     for j in in_ids:
-        if y[j].value() > 0.9:
+        if y[j].value() == 1:
             print(f"Flight {j}: {in_dict[j]}")
-            
+
     # Print selected accommodation
     print("\nSelected Accommodation:")
     for k in acc_ids:
-        if z[k].value() > 0.9:
+        if z[k].value() == 1:
             print(f"Accommodation {k}: {acc_dict[k]}")
-            
+
     # Print selected combinations
     print("\nSelected Combinations (w variables):")
-    for (i,j,k) in w_keys:
-        if w[(i,j,k)].value() > 0.9:
+    for i, j, k in w_keys:
+        if w[(i, j, k)].value() == 1:
             print(f"Combination: out={i}, in={j}, acc={k}")
-            print(f"Number of nights (D[(i,j)]): {D[(i,j)]}")
+            print(f"Number of nights (D[(i,j)]): {D[(i, j)]}")
             print(f"Accommodation cost per night: {acc_dict[k].cost_per_night}")
-            
+
     # Print detailed costs
     print("\n=== Detailed Costs ===")
-    trans_cost = sum(out_dict[i].cost * x[i].value() for i in out_ids) + \
-                sum(in_dict[j].cost * y[j].value() for j in in_ids)
-    
-    acc_cost = sum(acc_dict[k].cost_per_night * D[(i,j)] * w[(i,j,k)].value() 
-                  for (i,j,k) in w_keys)
-    
-    food_c = sum((f_lunch + f_dinner + f_bf * (1 - acc_dict[k].breakfast_included))
-                * D[(i,j)] * w[(i,j,k)].value() for (i,j,k) in w_keys)
-    
-    int_trans_c = sum(acc_dict[k].internal_cost * w[(i,j,k)].value() 
-                     for (i,j,k) in w_keys)
-    
+    trans_cost = sum(out_dict[i].cost * x[i].value() for i in out_ids) + sum(
+        in_dict[j].cost * y[j].value() for j in in_ids
+    )
+
+    acc_cost = sum(
+        acc_dict[k].cost_per_night * D[(i, j)] * w[(i, j, k)].value()
+        for (i, j, k) in w_keys
+    )
+
+    food_c = sum(
+        (f_lunch + f_dinner + f_bf * (1 - acc_dict[k].breakfast_included))
+        * D[(i, j)]
+        * w[(i, j, k)].value()
+        for (i, j, k) in w_keys
+    )
+
+    int_trans_c = sum(
+        acc_dict[k].internal_cost * w[(i, j, k)].value() for (i, j, k) in w_keys
+    )
+
     print(f"Transport cost: {trans_cost}")
     print(f"Accommodation cost: {acc_cost}")
     print(f"Food cost: {food_c}")
     print(f"Internal transport cost: {int_trans_c}")
     print(f"Total cost: {pulp.value(model.objective)}")
+
 
 # ---------------------------------------------------
 # 6. Solve the Model
