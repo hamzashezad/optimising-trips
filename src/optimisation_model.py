@@ -1,7 +1,8 @@
 import math
-from datetime import date, datetime, time
+from datetime import datetime, time
 
 import pulp
+import pytz
 
 from data import (
     accommodation_options,
@@ -12,14 +13,14 @@ from data import (
 # ----------------------------
 # 1. Define Sample Data
 # ----------------------------
+PKT = pytz.timezone("Asia/Karachi")
 
 # Date format and required time parameters
 min_out_dep = datetime.fromisoformat("2025-02-21T21:00:00+05:00")
 min_in_dep = datetime.fromisoformat("2025-02-23T23:00:00+05:00")
 
-required_date = date(2025, 2, 23)
-required_start_time = time(12, 0)  # 12:00
-required_end_time = time(23, 0)  # 23:00
+required_start = datetime(2025, 2, 23, 12, 0, tzinfo=PKT)
+required_end = datetime(2025, 2, 23, 23, 0, tzinfo=PKT)
 
 # Filter outward options by departure time constraint
 out_options = [
@@ -77,21 +78,8 @@ def meets_required_window(out_arr: datetime, in_dep: datetime):
       - If the inward flight departs on the required_date, it must depart no earlier than required_end_time.
         If it departs after the required_date, the condition is met.
     """
-    # Check arrival condition
-    if out_arr.date() < required_date:
-        arrival_ok = True
-    elif out_arr.date() == required_date:
-        arrival_ok = out_arr.time() <= required_start_time
-    else:
-        arrival_ok = False
-
-    # Check departure condition
-    if in_dep.date() > required_date:
-        departure_ok = True
-    elif in_dep.date() == required_date:
-        departure_ok = in_dep.time() >= required_end_time
-    else:
-        departure_ok = False
+    arrival_ok = out_arr <= required_start
+    departure_ok = in_dep > required_end
 
     return arrival_ok and departure_ok
 
