@@ -6,90 +6,228 @@
     <title>Travel Options</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-100 p-6">
-    <div class="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-lg">
-        <h1 class="text-2xl font-bold mb-4">Travel Options</h1>
-        
-        <!-- Outward Transport Options -->
-        <h2 class="text-xl font-semibold mb-2">Outward Transport Options</h2>
-        <table class="w-full border-collapse border border-gray-300 mb-4">
-            <thead>
-                <tr class="bg-gray-200">
-                    <th class="border px-4 py-2">ID</th>
-                    <th class="border px-4 py-2">Departure Time</th>
-                    <th class="border px-4 py-2">Arrival Time</th>
-                    <th class="border px-4 py-2">Cost</th>
-                    <th class="border px-4 py-2">Transport Type</th>
-                </tr>
-            </thead>
-            <tbody>
-				{% for transport in outward_transport_options %}
-                <tr>
-					<td class="border px-4 py-2">{{ transport.id }}</td>
-					<td class="border px-4 py-2">{{ transport.dep }}</td>
-					<td class="border px-4 py-2">{{ transport.arr}}</td>
-					<td class="border px-4 py-2">{{ transport.cost }}</td>
-					<td class="border px-4 py-2">{{ transport.type }}</td>
-                </tr>
-				{% endfor %}
-            </tbody>
-        </table>
-        
-        <!-- Inward Transport Options -->
-        <h2 class="text-xl font-semibold mb-2">Inward Transport Options</h2>
-        <table class="w-full border-collapse border border-gray-300 mb-4">
-            <thead>
-                <tr class="bg-gray-200">
-                    <th class="border px-4 py-2">ID</th>
-                    <th class="border px-4 py-2">Departure Time</th>
-                    <th class="border px-4 py-2">Arrival Time</th>
-                    <th class="border px-4 py-2">Cost</th>
-                    <th class="border px-4 py-2">Transport Type</th>
-                </tr>
-            </thead>
-            <tbody>
-				{% for transport in inward_transport_options %}
-                <tr>
-					<td class="border px-4 py-2">{{ transport.id }}</td>
-					<td class="border px-4 py-2">{{ transport.dep }}</td>
-					<td class="border px-4 py-2">{{ transport.arr }}</td>
-					<td class="border px-4 py-2">{{ transport.cost }}</td>
-					<td class="border px-4 py-2">{{ transport.type }}</td>
-                </tr>
-				{% endfor %}
-            </tbody>
-        </table>
-
-        <!-- Accommodation Options -->
-        <h2 class="text-xl font-semibold mb-2">Accommodation Options</h2>
-        <table class="w-full border-collapse border border-gray-300 mb-4">
-            <thead>
-                <tr class="bg-gray-200">
-                    <th class="border px-4 py-2">ID</th>
-                    <th class="border px-4 py-2">Check-in Time</th>
-                    <th class="border px-4 py-2">Check-out Time</th>
-                    <th class="border px-4 py-2">Cost/Night</th>
-                    <th class="border px-4 py-2">Breakfast Included</th>
-                </tr>
-            </thead>
-            <tbody>
-				{% for accom in accommodation_options %}
-                <tr>
-					<td class="border px-4 py-2">{{ accom.id }}</td>
-					<td class="border px-4 py-2">{{ accom.checkin }}</td>
-					<td class="border px-4 py-2">{{ accom.checkout }}</td>
-					<td class="border px-4 py-2">{{ accom.cost_per_night }}</td>
-					<td class="border px-4 py-2">{{ accom.breakfast_included }}</td>
-                </tr>
-				{% endfor %}
-			</tbody>
-        </table>
+<body class="bg-gray-50 p-6">
+    <div class="max-w-7xl mx-auto">
+        <h1 class="text-2xl font-bold mb-8 text-gray-800">Travel Options</h1>
 
 		<form action="/solve" method="post">
-			<button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-lg">Solve</button>
+			<button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-lg">Get optimal choice</button>
 		</form>
 
-        <div id="output" class="mt-4 p-4 bg-gray-200 rounded"></div>
+        <!-- Transport Options Tabs -->
+        <div class="mb-8">
+            <div class="sm:hidden">
+                <select id="transportTabs" class="block w-full rounded-md border-gray-300 p-2">
+                    <option value="outward">Outward Transport</option>
+                    <option value="inward">Return Transport</option>
+                </select>
+            </div>
+            <div class="hidden sm:block">
+                <div class="border-b border-gray-200">
+                    <nav class="-mb-px flex space-x-8" aria-label="Tabs">
+                        <button class="transport-tab-btn border-blue-500 text-blue-600 whitespace-nowrap border-b-2 py-4 px-1 text-sm font-medium" data-target="outward">
+                            Outward Transport
+                        </button>
+                        <button class="transport-tab-btn border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 whitespace-nowrap border-b-2 py-4 px-1 text-sm font-medium" data-target="inward">
+                            Return Transport
+                        </button>
+                    </nav>
+                </div>
+            </div>
+        </div>
+
+        <!-- Transport Tables -->
+        <div id="outwardTable" class="transport-table mb-8">
+            <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h2 class="text-lg font-semibold text-gray-800">Outward Journey Options</h2>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Departure</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Arrival</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Duration</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cost</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            {% for option in outward_transport_options %}
+                            <tr class="hover:bg-gray-50 cursor-pointer">
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="capitalize px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                        {% if option.type == 'air' %}bg-blue-100 text-blue-800{% else %}bg-purple-100 text-purple-800{% endif %}">
+                                        {{ option.type }}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                                    {{ option.dep | format_datetime }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                                    {{ option.arr | format_datetime }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                                    {% set duration = (option.arr - option.dep).total_seconds() / 3600 %}
+                                    {{ "%.1f"|format(duration) }}h
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 transport-cost">
+                                    {{ option.cost }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 font-mono">
+                                    {{ option.id }}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div id="inwardTable" class="transport-table hidden mb-8">
+            <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h2 class="text-lg font-semibold text-gray-800">Return Journey Options</h2>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Departure</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Arrival</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Duration</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cost</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            {% for option in inward_transport_options %}
+                            <tr class="hover:bg-gray-50 cursor-pointer">
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="capitalize px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                        {% if option.type == 'air' %}bg-blue-100 text-blue-800{% else %}bg-purple-100 text-purple-800{% endif %}">
+                                        {{ option.type }}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                                    {{ option.dep | format_datetime }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                                    {{ option.arr | format_datetime }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                                    {% set duration = (option.arr - option.dep).total_seconds() / 3600 %}
+                                    {{ "%.1f"|format(duration) }}h
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 transport-cost">
+                                    {{ option.cost }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 font-mono">
+                                    {{ option.id }}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Accommodation Options -->
+        <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h2 class="text-lg font-semibold text-gray-800">Accommodation Options</h2>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Check-in</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Check-out</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cost per Night</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Internal Cost</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Breakfast</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        {% for option in accommodation_options %}
+                        <tr class="hover:bg-gray-50 cursor-pointer">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{{ option.checkin }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{{ option.checkout }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 accommodation-cost">
+                                {{ option.cost_per_night }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 accommodation-cost">
+                                {{ option.internal_cost }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                    {% if option.breakfast_included %}bg-green-100 text-green-800{% else %}bg-red-100 text-red-800{% endif %}">
+                                    {{ "Included" if option.breakfast_included else "Not included" }}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 font-mono">{{ option.id }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
+
+    <script>
+        // Format all costs in PKR
+        const formatter = new Intl.NumberFormat('en-PK', {
+            style: 'currency',
+            currency: 'PKR',
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 0
+        });
+
+        // Format transport costs
+        document.querySelectorAll('.transport-cost').forEach(element => {
+            element.textContent = formatter.format(element.textContent);
+        });
+
+        // Format accommodation costs
+        document.querySelectorAll('.accommodation-cost').forEach(element => {
+            element.textContent = formatter.format(element.textContent);
+        });
+
+        // Tab switching functionality
+        document.querySelectorAll('.transport-tab-btn').forEach(button => {
+            button.addEventListener('click', () => {
+                // Update button styles
+                document.querySelectorAll('.transport-tab-btn').forEach(btn => {
+                    btn.classList.remove('border-blue-500', 'text-blue-600');
+                    btn.classList.add('border-transparent', 'text-gray-500');
+                });
+                button.classList.remove('border-transparent', 'text-gray-500');
+                button.classList.add('border-blue-500', 'text-blue-600');
+
+                // Show/hide tables
+                document.querySelectorAll('.transport-table').forEach(table => {
+                    table.classList.add('hidden');
+                });
+                document.getElementById(`${button.dataset.target}Table`).classList.remove('hidden');
+            });
+        });
+
+        // Mobile select functionality
+        const mobileSelect = document.getElementById('transportTabs');
+        if (mobileSelect) {
+            mobileSelect.addEventListener('change', (e) => {
+                document.querySelectorAll('.transport-table').forEach(table => {
+                    table.classList.add('hidden');
+                });
+                document.getElementById(`${e.target.value}Table`).classList.remove('hidden');
+            });
+        }
+    </script>
 </body>
 </html>

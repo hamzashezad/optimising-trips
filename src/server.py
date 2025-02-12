@@ -1,5 +1,6 @@
 import logging
 
+from datetime import datetime
 import pulp
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse
@@ -22,8 +23,14 @@ class ModelSolution(BaseModel):
     inward_transport_selection: TransportOption
     accommodation_selection: AccommodationOption
 
+def format_datetime(value: datetime) -> str:
+    return value.strftime("%Y-%m-%d, %H:%M %Z")
+
 
 templates = Jinja2Templates(directory="templates")
+
+templates.env.filters["format_datetime"] = format_datetime
+
 app = FastAPI()
 
 

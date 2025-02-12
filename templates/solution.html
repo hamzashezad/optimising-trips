@@ -1,3 +1,5 @@
+{% set nights = ((solution.inward_transport_selection.dep - solution.outward_transport_selection.arr).total_seconds() / (3600 * 24)) | round(0, 'ceil') | int %}
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -15,7 +17,7 @@
             <div class="bg-blue-50 p-4 rounded-lg">
                 <h3 class="text-sm font-medium text-blue-900">Total Nights</h3>
                 <p class="text-2xl font-bold text-blue-700" id="totalNights">
-                    {{ ((solution.inward_transport_selection.dep - solution.outward_transport_selection.arr).days) }}
+					{{ nights }}
                 </p>
             </div>
             <div class="bg-green-50 p-4 rounded-lg">
@@ -42,93 +44,164 @@
             </div>
         </div>
 
+        <!-- Total Cost Card -->
+        <div class="bg-gradient-to-r from-green-500 to-emerald-600 rounded-xl shadow-sm p-6 mb-8">
+            <h2 class="text-lg font-semibold text-white/90 mb-2">Total Cost</h2>
+            <p class="text-3xl font-bold text-white" id="totalCost">{{ solution.cost }}</p>
+        </div>
+
         <div class="grid gap-6 md:grid-cols-2 mb-8">
             <!-- Outward Transport Card -->
-            <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-                <h2 class="text-lg font-semibold mb-4 text-gray-800">Outward Journey</h2>
-                <div class="space-y-2">
-                    <p class="text-gray-600">ID: <span class="capitalize">{{ solution.outward_transport_selection.id }}</span></p>
-                    <p class="text-gray-600">Type: <span class="capitalize">{{ solution.outward_transport_selection.type }}</span></p>
-                    <p class="text-gray-600">Departure: {{ solution.outward_transport_selection.dep }}</p>
-                    <p class="text-gray-600">Arrival: {{ solution.outward_transport_selection.arr }}</p>
-                    <p class="text-gray-600">Duration: 
-                        {% set duration = (solution.outward_transport_selection.arr - solution.outward_transport_selection.dep).total_seconds() / 3600 %}
-                        {{ "%.1f"|format(duration) }} hours
-                    </p>
-                    <p class="text-gray-600">Overnight Journey: 
-                        <span class="{% if solution.outward_transport_selection.dep.date() != solution.outward_transport_selection.arr.date() %}text-yellow-600{% else %}text-gray-600{% endif %}">
-                            {{ "Yes" if solution.outward_transport_selection.dep.date() != solution.outward_transport_selection.arr.date() else "No" }}
+            <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+                <div class="bg-blue-500 px-6 py-4">
+                    <h2 class="text-lg font-semibold text-white flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z" />
+                        </svg>
+                        Outward Journey
+                    </h2>
+                </div>
+                <div class="divide-y divide-gray-100">
+                    <div class="px-6 py-3 flex justify-between items-center">
+                        <span class="text-gray-600">ID</span>
+                        <span class="text-sm font-mono">{{ solution.outward_transport_selection.id }}</span>
+                    </div>
+                    <div class="px-6 py-3 flex justify-between items-center">
+                        <span class="text-gray-600">Type</span>
+                        <span class="capitalize bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-sm">{{ solution.outward_transport_selection.type }}</span>
+                    </div>
+                    <div class="px-6 py-3 flex justify-between items-center">
+                        <span class="text-gray-600">Departure</span>
+                        <span class="font-medium">{{ solution.outward_transport_selection.dep|format_datetime }}</span>
+                    </div>
+                    <div class="px-6 py-3 flex justify-between items-center">
+                        <span class="text-gray-600">Arrival</span>
+                        <span class="font-medium">{{ solution.outward_transport_selection.arr|format_datetime }}</span>
+                    </div>
+                    <div class="px-6 py-3 flex justify-between items-center">
+                        <span class="text-gray-600">Duration</span>
+                        <span class="font-medium">
+                            {% set duration = (solution.outward_transport_selection.arr - solution.outward_transport_selection.dep).total_seconds() / 3600 %}
+                            {{ "%.1f"|format(duration) }} hours
                         </span>
-                    </p>
-                    <p class="text-gray-600">Cost: <span class="transport-cost">{{ solution.outward_transport_selection.cost }}</span></p>
+                    </div>
+                    <div class="px-6 py-3 flex justify-between items-center">
+                        <span class="text-gray-600">Cost</span>
+                        <span class="font-medium transport-cost">{{ solution.outward_transport_selection.cost }}</span>
+                    </div>
                 </div>
             </div>
 
             <!-- Inward Transport Card -->
-            <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-                <h2 class="text-lg font-semibold mb-4 text-gray-800">Return Journey</h2>
-                <div class="space-y-2">
-                    <p class="text-gray-600">ID: <span class="capitalize">{{ solution.inward_transport_selection.id }}</span></p>
-                    <p class="text-gray-600">Type: <span class="capitalize">{{ solution.inward_transport_selection.type }}</span></p>
-                    <p class="text-gray-600">Departure: {{ solution.inward_transport_selection.dep }}</p>
-                    <p class="text-gray-600">Arrival: {{ solution.inward_transport_selection.arr }}</p>
-                    <p class="text-gray-600">Duration: 
-                        {% set duration = (solution.inward_transport_selection.arr - solution.inward_transport_selection.dep).total_seconds() / 3600 %}
-                        {{ "%.1f"|format(duration) }} hours
-                    </p>
-                    <p class="text-gray-600">Overnight Journey: 
-                        <span class="{% if solution.inward_transport_selection.dep.date() != solution.inward_transport_selection.arr.date() %}text-yellow-600{% else %}text-gray-600{% endif %}">
-                            {{ "Yes" if solution.inward_transport_selection.dep.date() != solution.inward_transport_selection.arr.date() else "No" }}
+            <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+                <div class="bg-indigo-500 px-6 py-4">
+                    <h2 class="text-lg font-semibold text-white flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M2 22l7-20 4 9 9 4-20 7z" />
+                        </svg>
+                        Return Journey
+                    </h2>
+                </div>
+                <div class="divide-y divide-gray-100">
+                    <div class="px-6 py-3 flex justify-between items-center">
+                        <span class="text-gray-600">ID</span>
+                        <span class="text-sm font-mono">{{ solution.inward_transport_selection.id }}</span>
+                    </div>
+                    <div class="px-6 py-3 flex justify-between items-center">
+                        <span class="text-gray-600">Type</span>
+                        <span class="capitalize bg-indigo-50 text-indigo-700 px-3 py-1 rounded-full text-sm">{{ solution.inward_transport_selection.type }}</span>
+                    </div>
+                    <div class="px-6 py-3 flex justify-between items-center">
+                        <span class="text-gray-600">Departure</span>
+                        <span class="font-medium">{{ solution.inward_transport_selection.dep|format_datetime }}</span>
+                    </div>
+                    <div class="px-6 py-3 flex justify-between items-center">
+                        <span class="text-gray-600">Arrival</span>
+                        <span class="font-medium">{{ solution.inward_transport_selection.arr|format_datetime }}</span>
+                    </div>
+                    <div class="px-6 py-3 flex justify-between items-center">
+                        <span class="text-gray-600">Duration</span>
+                        <span class="font-medium">
+                            {% set duration = (solution.inward_transport_selection.arr - solution.inward_transport_selection.dep).total_seconds() / 3600 %}
+                            {{ "%.1f"|format(duration) }} hours
                         </span>
-                    </p>
-                    <p class="text-gray-600">Cost: <span class="transport-cost">{{ solution.inward_transport_selection.cost }}</span></p>
+                    </div>
+                    <div class="px-6 py-3 flex justify-between items-center">
+                        <span class="text-gray-600">Cost</span>
+                        <span class="font-medium transport-cost">{{ solution.inward_transport_selection.cost }}</span>
+                    </div>
                 </div>
             </div>
         </div>
 
         <!-- Accommodation Card -->
-        <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200 mb-8">
-            <h2 class="text-lg font-semibold mb-4 text-gray-800">Accommodation</h2>
-            <div class="grid md:grid-cols-2 gap-4">
-                <div class="space-y-2">
-                    <p class="text-gray-600">Check-in time: {{ solution.accommodation_selection.id }}</p>
-                    <p class="text-gray-600">Check-in time: {{ solution.accommodation_selection.checkin }}</p>
-                    <p class="text-gray-600">Check-out time: {{ solution.accommodation_selection.checkout }}</p>
-                    <p class="text-gray-600">Early check-in needed: 
-                        <span class="{% if solution.outward_transport_selection.arr.time() < solution.accommodation_selection.checkin %}text-yellow-600{% else %}text-gray-600{% endif %}">
+        <div class="bg-white rounded-xl shadow-sm overflow-hidden mb-8">
+            <div class="bg-emerald-500 px-6 py-4">
+                <h2 class="text-lg font-semibold text-white flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                    </svg>
+                    Accommodation
+                </h2>
+            </div>
+            <div class="grid md:grid-cols-2">
+                <div class="divide-y divide-gray-100">
+                    <div class="px-6 py-3 flex justify-between items-center">
+                        <span class="text-gray-600">Check-in time</span>
+                        <span class="font-medium">{{ solution.accommodation_selection.checkin }}</span>
+                    </div>
+                    <div class="px-6 py-3 flex justify-between items-center">
+                        <span class="text-gray-600">Check-out time</span>
+                        <span class="font-medium">{{ solution.accommodation_selection.checkout }}</span>
+                    </div>
+                    <div class="px-6 py-3 flex justify-between items-center">
+                        <span class="text-gray-600">Early check-in needed</span>
+                        <span class="{% if solution.outward_transport_selection.arr.time() < solution.accommodation_selection.checkin %}text-yellow-600{% else %}text-gray-600{% endif %} font-medium">
                             {{ "Yes" if solution.outward_transport_selection.arr.time() < solution.accommodation_selection.checkin else "No" }}
                         </span>
-                    </p>
-                    <p class="text-gray-600">Late check-out needed: 
-                        <span class="{% if solution.inward_transport_selection.dep.time() > solution.accommodation_selection.checkout %}text-yellow-600{% else %}text-gray-600{% endif %}">
+                    </div>
+                    <div class="px-6 py-3 flex justify-between items-center">
+                        <span class="text-gray-600">Late check-out needed</span>
+                        <span class="{% if solution.inward_transport_selection.dep.time() > solution.accommodation_selection.checkout %}text-yellow-600{% else %}text-gray-600{% endif %} font-medium">
                             {{ "Yes" if solution.inward_transport_selection.dep.time() > solution.accommodation_selection.checkout else "No" }}
                         </span>
-                    </p>
-                    <p class="text-gray-600">Breakfast included: 
-                        <span class="{% if solution.accommodation_selection.breakfast_included %}text-green-600{% else %}text-red-600{% endif %}">
+                    </div>
+                    <div class="px-6 py-3 flex justify-between items-center">
+                        <span class="text-gray-600">Breakfast included</span>
+                        <span class="{% if solution.accommodation_selection.breakfast_included %}text-emerald-600{% else %}text-red-600{% endif %} font-medium">
                             {{ "Yes" if solution.accommodation_selection.breakfast_included else "No" }}
                         </span>
-                    </p>
+                    </div>
                 </div>
-                <div class="space-y-2">
-                    <p class="text-gray-600">Cost per night: <span class="accommodation-cost">{{ solution.accommodation_selection.cost_per_night }}</span></p>
-                    <p class="text-gray-600">Internal cost: <span class="accommodation-cost">{{ solution.accommodation_selection.internal_cost }}</span></p>
-                    <p class="text-gray-600">Total nights: {{ ((solution.inward_transport_selection.dep - solution.outward_transport_selection.arr).days) }}</p>
-                    <p class="text-gray-600">Room total: <span class="accommodation-cost">
-                        {{ solution.accommodation_selection.cost_per_night * ((solution.inward_transport_selection.dep - solution.outward_transport_selection.arr).days) + solution.accommodation_selection.internal_cost }}
-                    </span></p>
-                    <p class="text-gray-600">Percentage of total: 
-                        {% set acc_total = solution.accommodation_selection.cost_per_night * ((solution.inward_transport_selection.dep - solution.outward_transport_selection.arr).days) + solution.accommodation_selection.internal_cost %}
-                        {{ "%.1f"|format(acc_total / solution.cost * 100) }}%
-                    </p>
+                <div class="divide-y divide-gray-100 md:border-l">
+                    <div class="px-6 py-3 flex justify-between items-center">
+                        <span class="text-gray-600">Cost per night</span>
+                        <span class="font-medium accommodation-cost">{{ solution.accommodation_selection.cost_per_night }}</span>
+                    </div>
+                    <div class="px-6 py-3 flex justify-between items-center">
+                        <span class="text-gray-600">Internal cost</span>
+                        <span class="font-medium accommodation-cost">{{ solution.accommodation_selection.internal_cost }}</span>
+                    </div>
+                    <div class="px-6 py-3 flex justify-between items-center">
+                        <span class="text-gray-600">Total nights</span>
+						<span class="font-medium">{{ nights }}</span>
+
+                    </div>
+                    <div class="px-6 py-3 flex justify-between items-center">
+                        <span class="text-gray-600">Room total</span>
+                        <span class="font-medium accommodation-cost">
+                            {{ solution.accommodation_selection.cost_per_night * nights + solution.accommodation_selection.internal_cost }}
+                        </span>
+                    </div>
+                    <div class="px-6 py-3 flex justify-between items-center">
+                        <span class="text-gray-600">Percentage of total</span>
+                        <span class="font-medium">
+                            {% set acc_total = solution.accommodation_selection.cost_per_night * nights + solution.accommodation_selection.internal_cost %}
+                            {{ "%.1f"|format(acc_total / solution.cost * 100) }}%
+                        </span>
+                    </div>
                 </div>
             </div>
-        </div>
-
-        <!-- Total Cost Card -->
-        <div class="bg-green-50 p-6 rounded-lg shadow-sm border border-green-200">
-            <h2 class="text-lg font-semibold mb-2 text-gray-800">Total Cost</h2>
-            <p class="text-2xl font-bold text-green-700" id="totalCost">{{ solution.cost }}</p>
         </div>
     </div>
 
